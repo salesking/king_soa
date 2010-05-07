@@ -1,7 +1,6 @@
 require 'singleton'
 require 'json'
 require 'typhoeus'
-#require 'king_hmac'
 require 'active_support/inflector'
 
 require 'king_soa/registry'
@@ -13,15 +12,9 @@ require 'king_soa/rack/middleware'
 # service:
 #   name: sign_document
 #   url: "https://msg.salesking.eu"
-#   hmac: 'key:secret'#
+#   auth: 'a-long-random-string'
 #   queue: a-queue-name
 #
-#
-#
-#   method: 
-#     name: sign_document
-#     # if given the named resque queue will be used
-#     queue: signings
 #
 # method: save_signed_document
 # url: "https://www.salesking.eu/soa"

@@ -1,7 +1,7 @@
 module KingSoa
   class Service
     # endpoint url
-    attr_accessor :debug, :name, :auth_key, :queue, :response
+    attr_accessor :debug, :name, :auth_key, :queue
     attr_reader :request
     
     def initialize(opts)
@@ -16,10 +16,8 @@ module KingSoa
       resp_code = @request.perform
       case resp_code
       when 200
-        #Hoth::Loggerequest.debug "response.body: #{response.body}"
         return self.decode(@request.response_body)["result"]
       else
-        #Hoth::Loggerequest.debug "response.body: #{response.body}"
         return self.decode(@request.response_body)["error"]
       end
     end
@@ -30,12 +28,11 @@ module KingSoa
     end
 
     def local_class
-      @local_class_name ||= "#{self.name.to_s.camelize}"
-      begin
-        @local_class_name.constantize
-      rescue NameError => e        # no local implementation
-        false
-      end
+      @local_class ||= begin
+                        "#{self.name.to_s.camelize}".constantize
+                      rescue NameError => e        # no local implementation
+                        false
+                      end
     end
 
     def request
@@ -43,15 +40,13 @@ module KingSoa
     end
 
     def set_request_opts(args)
-      r = request
       request.url         = url
       request.method      = :post
-      request.user_agent  = 'KingSoa'
-      request.follow_location = true
       request.timeout     = 100 # milliseconds
       request.params      = params(args)
-      request.verbose     = 1 if debug
-      
+      request.user_agent  = 'KingSoa'
+      request.follow_location = true      
+      request.verbose     = 1 if debug      
     end
 
     # Url receiving the request
@@ -61,6 +56,19 @@ module KingSoa
     end
     def url=(url)
       @url = "#{url}/soa"
+    end
+
+     # The params for each soa request consisnt of two values:
+    # name => the name of the method to call
+    # params => the parameters for the method
+    # ==== Parameter
+    # params<Hash|Array|String>:: will be json encoded
+    # === Returns
+    # <Hash{String=>String}>:: params added to the POST body
+    def params(payload)
+      { 'name'   => name.to_s,
+        'params' => encode(payload),
+        'auth_key'=> auth_key }
     end
 
     def encode(string)
@@ -73,19 +81,6 @@ module KingSoa
       rescue JSON::ParserError => e
         raise e
       end
-    end
-
-    # The params for each soa request consisnt of two values:
-    # name => the name of the method to call
-    # params => the parameters for the method
-    # ==== Parameter
-    # params<Hash|Array|String>:: will be json encoded
-    # === Returns
-    # <Hash{String=>String}>:: params added to the POST body
-    def params(payload)
-      { 'name'   => name.to_s,
-        'params' => encode(payload),
-        'auth_key'=> auth_key }
     end
 
   end

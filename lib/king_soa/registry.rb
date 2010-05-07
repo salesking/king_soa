@@ -3,7 +3,7 @@ module KingSoa
     include Singleton
 
     ############################################################################
-    # Class methods
+    # Class methods .. only use those since we are in a Singleton
     ############################################################################
 
     # Get a method by a given name
