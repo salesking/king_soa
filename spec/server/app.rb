@@ -17,7 +17,7 @@ KingSoa::Registry << service
 # the class beeing called lokally
 class SoaTestService
 
-  def self.execute(param1, param2, param3)
+  def self.perform(param1, param2, param3)
     return [param1, param2, param3]
   end
 

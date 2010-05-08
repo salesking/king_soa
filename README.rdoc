@@ -6,7 +6,7 @@ SOA. Furthermore you want to know where those services live.
 == Tech details
 
 the soa registry is keeping a bunch of service objects which know where a method
-lives. Methods are classes with an self.execute method and can be located local,
+lives. Methods are classes with an self.perform method and can be located local,
 remote(http) or beeing put onto a queue
 
 

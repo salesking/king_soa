@@ -22,8 +22,8 @@ module KingSoa
       end
     end
 
-    def execute(*args)
-      result = local_class ? local_class.send(:execute, *args) : call_remote(*args)
+    def perform(*args)
+      result = local_class ? local_class.send(:perform, *args) : call_remote(*args)
       return result
     end
     

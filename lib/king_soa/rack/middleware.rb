@@ -15,8 +15,8 @@ module KingSoa::Rack
           service = KingSoa.find(req.params["name"])
           # authenticate
           authenticated?(service, req.params["auth_key"])
-          # execute method with decoded  params
-          result = service.execute(*service.decode( req.params["params"] ))
+          # perform method with decoded  params
+          result = service.perform(*service.decode( req.params["params"] ))
           # encode result
           encoded_result = service.encode({"result" => result})
           # and return
