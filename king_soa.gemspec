@@ -4,7 +4,7 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = %q{sk-hoth}
+  s.name = %q{king_soa}
   s.version = "0.0.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
@@ -34,7 +34,7 @@ SOA. Furthermore you want to know where to deploy those services.
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.6}
-  s.summary = %q{Registry and deployment description abstraction for SOA-Services. Tweaked by SalesKing}
+  s.summary = %q{Registry and deployment description abstraction for SOA-Services by SalesKing}
   s.test_files = [
     "spec/spec_helper.rb",
      "spec/king_soa/registry_spec.rb",
@@ -48,24 +48,18 @@ SOA. Furthermore you want to know where to deploy those services.
     s.specification_version = 3
 
     if Gem::Version.new(Gem::RubyGemsVersion) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<curb>, [">= 0"])
+      s.add_runtime_dependency(%q<typhoeus>, [">= 0"])
       s.add_runtime_dependency(%q<json>, [">= 0"])
-      s.add_runtime_dependency(%q<king_hmac>, [">= 0"])
       s.add_development_dependency(%q<rspec>, [">= 0"])
-      s.add_development_dependency(%q<webmock>, [">= 0"])
     else
-      s.add_dependency(%q<curb>, [">= 0"])
+      s.add_dependency(%q<typhoeus>, [">= 0"])
       s.add_dependency(%q<json>, [">= 0"])
-      s.add_dependency(%q<king_hmac>, [">= 0"])
       s.add_dependency(%q<rspec>, [">= 0"])
-      s.add_dependency(%q<webmock>, [">= 0"])
     end
   else
-    s.add_dependency(%q<curb>, [">= 0"])
+    s.add_dependency(%q<typhoeus>, [">= 0"])
     s.add_dependency(%q<json>, [">= 0"])
-    s.add_dependency(%q<king_hmac>, [">= 0"])
     s.add_dependency(%q<rspec>, [">= 0"])
-    s.add_dependency(%q<webmock>, [">= 0"])
   end
 end
 

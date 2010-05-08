@@ -21,7 +21,8 @@ require 'king_soa/rack/middleware'
 #
 #
 # after defining your services you can call each of them with
-# <tt>Hoth::Services.service_name(params)</tt>
+#
+# <tt>KingSoa.service_name(args)</tt>
 #
 #     KingSoa.sign_document(counter)
 #     current_number = Hoth::Services.value_of_counter(counter)
@@ -32,12 +33,11 @@ module KingSoa
   class << self
 
     def init_from_hash(services)
-      # create service
-      
+      # create service      
     end
     
     # Locate service by a given name
-    # ==== Params
+    # ==== Parameter
     # service<String|Symbol>:: the name to lookup
     def find(service)
       Registry[service]
@@ -46,7 +46,7 @@ module KingSoa
     # this is where the services get called
     def method_missing(meth, *args, &blk) # :nodoc:
       if service = Registry[meth]
-        service.execute(*args)
+        service.perform(*args)
       else
         super
       end

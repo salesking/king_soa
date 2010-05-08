@@ -11,19 +11,21 @@ module KingSoa::Rack
       if env["PATH_INFO"] =~ /^\/soa/
         begin
           req = Rack::Request.new(env)
-          # find service
+          # find service TODO rescue service not found
           service = KingSoa.find(req.params["name"])
           # authenticate
-          authenticated?(service, req.params["auth_key"])
-          # perform method with decoded  params
-          result = service.perform(*service.decode( req.params["params"] ))
+          authenticated?(service, req.params["auth"])
+          # perform method with decoded params
+          result = service.perform(*service.decode( req.params["args"] ))
           # encode result
           encoded_result = service.encode({"result" => result})
           # and return
-          [ 200,
-            {'Content-Type' => 'application/json',
-             'Content-Length' => "#{encoded_result.length}"},
-            [encoded_result] ]
+          [
+            200,
+            {'Content-Type' => 'application/json', 'Content-Length' => "#{encoded_result.length}"},
+            [encoded_result] 
+          ]
+
         rescue Exception => e
           #Hoth::Logger.debug "e: #{e.message}"
           if service
@@ -39,8 +41,9 @@ module KingSoa::Rack
       end
     end
 
+    # TODO raise and rescue specific error
     def authenticated?(service, key)
-      raise "Please provide a valid authentication key" unless service.auth_key == key
+      raise "Please provide a valid authentication key" unless service.auth == key
     end
 
   end

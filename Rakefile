@@ -4,8 +4,8 @@ require 'rake'
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
-    gem.name = "sk-hoth"
-    gem.summary = %Q{Registry and deployment description abstraction for SOA-Services. Tweaked by SalesKing}
+    gem.name = "king_soa"
+    gem.summary = %Q{Registry and deployment description abstraction for SOA-Services by SalesKing}
     gem.description = <<-DESCRIPTION
 Creating a SOA requires a centralized location to define all services within the
 SOA. Furthermore you want to know where to deploy those services.
@@ -15,13 +15,12 @@ DESCRIPTION
     gem.authors = ['Georg Leciejewski']
     gem.files = FileList["[A-Z]*.*", "{lib,spec}/**/*"]
 
-    gem.add_dependency "curb"
+    gem.add_dependency "typhoeus"
     gem.add_dependency "json"
-    gem.add_dependency "king_hmac"
     
     gem.add_development_dependency "rspec"
 #    gem.add_development_dependency "rack/test"
-    gem.add_development_dependency "webmock"
+#    gem.add_development_dependency "webmock"
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError
@@ -35,9 +34,11 @@ Spec::Rake::SpecTask.new(:spec) do |spec|
 end
 
 Spec::Rake::SpecTask.new(:rcov) do |spec|
-  spec.libs << 'lib' << 'spec'
-  spec.pattern = 'spec/**/*_spec.rb'
+  spec.spec_files = FileList['spec/**/*_spec.rb']
   spec.rcov = true
+  spec.rcov_opts = ['--exclude', 'spec']
+  spec.rcov_opts << '--sort coverage'
+  spec.rcov_opts << '--sort-reverse '
 end
 
 task :spec => :check_dependencies

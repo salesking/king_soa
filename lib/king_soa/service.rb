@@ -1,14 +1,14 @@
 module KingSoa
   class Service
     # endpoint url
-    attr_accessor :debug, :name, :auth_key, :queue
+    attr_accessor :debug, :name, :auth, :queue
     attr_reader :request
     
     def initialize(opts)
       self.name = opts[:name].to_sym
       self.url = opts[:url] if opts[:url]      
       self.queue = opts[:queue] if opts[:queue]
-      self.auth_key = opts[:auth_key] if opts[:auth_key]
+      self.auth = opts[:auth] if opts[:auth]
     end
 
     def call_remote(*args)
@@ -59,17 +59,20 @@ module KingSoa
       @url = "#{url}/soa"
     end
 
-     # The params for each soa request consisnt of two values:
-    # name => the name of the method to call
-    # params => the parameters for the method
+    # The params for each soa request consist of following values:
+    #    name => the name of the method to call
+    #    args => the arguments for the soa class method
+    #    auth => an authentication key. something like a api key or pass. To make
+    # it really secure you MUST use https or do not expose your soa endpoints
+    #
     # ==== Parameter
-    # params<Hash|Array|String>:: will be json encoded
+    # payload<Hash|Array|String>:: will be json encoded
     # === Returns
     # <Hash{String=>String}>:: params added to the POST body
     def params(payload)
-      { 'name'   => name.to_s,
-        'params' => encode(payload),
-        'auth_key'=> auth_key }
+      { 'name'    => name.to_s,
+        'args'    => encode(payload),
+        'auth'    => auth }
     end
 
     def encode(string)
