@@ -7,10 +7,14 @@ require "#{File.dirname(__FILE__)}/../../lib/king_soa"
 use KingSoa::Rack::Middleware
 
 
+#######################################
+# Somewhere in you app
+#
 # setup test registry
 service = KingSoa::Service.new(:name=>'soa_test_service', :auth_key=>'12345')
 KingSoa::Registry << service
 
+# the class beeing called lokally
 class SoaTestService
 
   def self.execute(param1, param2, param3)

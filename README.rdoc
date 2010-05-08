@@ -1,0 +1,64 @@
+= KingSoa
+
+Creating a SOA requires a centralized location to define all services within the
+SOA. Furthermore you want to know where those services live.
+
+== Tech details
+
+the soa registry is keeping a bunch of service objects which know where a method
+lives. Methods are classes with an self.execute method and can be located local,
+remote(http) or beeing put onto a queue
+
+
+
+== Install
+
+    gem install king_soa
+
+== Define services
+
+=== Low Level
+
+You can define services anywhere in your app and add them to the service
+registry.
+Be aware that the registry is a singleton, so that the rack middleware and your
+app are seeing the same :
+    # create the service
+     service = KingSoa::Service.new(:name=>:increment_usage,
+                                    :url=>'http://localhost:4567',
+                                    :auth_key=>'12345')
+     # register
+     KingSoa::Registry << service
+
+     # somewhere in your app just call your service method
+     KingSoa.increment_usage(12)
+
+A service name is always required. If the service is to be called remotely you
+must add a url and an auth_key.
+The transport is done via http calls, so to make it secure you should either use
+https in public or hide the servers somwhere on your farm.
+
+== Integration
+
+=== Rails
+
+
+=== Sinatra
+
+Take a look at spec/server/app where you can see a minimal sinatra implementation
+The base is just:
+    require 'king_soa'
+    use KingSoa::Rack::Middleware
+    
+ 
+== Note on Patches/Pull Requests
+ 
+* Fork the project.
+* Make your feature addition or bug fix.
+* Add tests for it. This is important so I don't break it in a future version unintentionally.
+* Commit, do not mess with rakefile, version, or history. (if you want to have your own version, that is fine but bump version in a commit by itself I can ignore when I pull)
+* Send me a pull request. Bonus points for topic branches.
+
+== Copyright
+
+Copyright (c) 2010 Georg Leciejewski. See LICENSE for details.

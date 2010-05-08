@@ -19,8 +19,13 @@ module KingSoa
       instance.services
     end
 
+    # find a group of services identified by starting with the same string
+    #
+    def group(name)
+      instance.group(name)
+    end
     ############################################################################
-    # Instance methods - not accessible => Singleton
+    # Instance methods - not directly accessible => Singleton
     ############################################################################
 
     # returns all available methods
@@ -37,6 +42,12 @@ module KingSoa
     def [](service_name)
       name = service_name.to_sym
       services.detect {|s| s.name == name }
+    end
+
+    def group(service_name)
+      name = service_name.to_sym
+#      srvs = []
+      services.collect {|s| s.name[/^#{name}/] }
     end
 
 

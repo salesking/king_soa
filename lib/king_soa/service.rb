@@ -26,6 +26,7 @@ module KingSoa
       result = local_class ? local_class.send(:execute, *args) : call_remote(*args)
       return result
     end
+    
 
     def local_class
       @local_class ||= begin
