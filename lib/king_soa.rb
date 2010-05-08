@@ -31,23 +31,26 @@ module KingSoa
   
   class << self
 
-    def init_from_yaml(loc)
+    def init_from_hash(services)
+      # create service
       
     end
+    
     # Locate service by a given name
     # ==== Params
     # service<String|Symbol>:: the name to lookup
     def find(service)
       Registry[service]
     end
-      # this is where the services get called
-      def method_missing(meth, *args, &blk) # :nodoc:
-        if service = Registry[meth]
-          service.execute(*args)
-        else
-          super
-        end
+
+    # this is where the services get called
+    def method_missing(meth, *args, &blk) # :nodoc:
+      if service = Registry[meth]
+        service.execute(*args)
+      else
+        super
       end
     end
+  end
 
 end
