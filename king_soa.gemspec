@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{king_soa}
-  s.version = "0.0.2"
+  s.version = "0.0.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Georg Leciejewski"]
@@ -52,20 +52,20 @@ SOA. KingSoa takes care of keeping services in a service registry and knows how 
       s.add_runtime_dependency(%q<json>, [">= 0"])
       s.add_runtime_dependency(%q<resque>, [">= 0"])
       s.add_development_dependency(%q<rspec>, [">= 0"])
-      s.add_development_dependency(%q<rack/test>, [">= 0"])
+      s.add_development_dependency(%q<rack>, [">= 0"])
     else
       s.add_dependency(%q<typhoeus>, [">= 0"])
       s.add_dependency(%q<json>, [">= 0"])
       s.add_dependency(%q<resque>, [">= 0"])
       s.add_dependency(%q<rspec>, [">= 0"])
-      s.add_dependency(%q<rack/test>, [">= 0"])
+      s.add_dependency(%q<rack>, [">= 0"])
     end
   else
     s.add_dependency(%q<typhoeus>, [">= 0"])
     s.add_dependency(%q<json>, [">= 0"])
     s.add_dependency(%q<resque>, [">= 0"])
     s.add_dependency(%q<rspec>, [">= 0"])
-    s.add_dependency(%q<rack/test>, [">= 0"])
+    s.add_dependency(%q<rack>, [">= 0"])
   end
 end
 
