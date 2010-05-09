@@ -17,6 +17,14 @@ describe KingSoa::Service, 'local request' do
   end
 end
 
+describe KingSoa::Service, 'queued' do
+
+  it "should call queue" do
+    s = KingSoa::Service.new(:name=>:local_soa_class, :queue=>:test_queue)
+    s.perform(1,2,3).should be_nil
+  end
+end
+
 describe KingSoa::Service, 'remote request' do
 
   before :all do
@@ -39,6 +47,6 @@ describe KingSoa::Service, 'remote request' do
 
   it "should call a service remote and return auth error" do
     s = KingSoa::Service.new(:name=>:wrong_service, :url=>test_url, :auth=>'12345')
-    s.perform(1,2,3).should == "An error occurred! (undefined method `auth' for nil:NilClass)"
+    s.perform(1,2,3).should include("The service: wrong_service could not be found")
   end
 end

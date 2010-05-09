@@ -1,4 +1,5 @@
 require 'singleton'
+require 'resque'
 require 'json'
 require 'typhoeus'
 require 'active_support/inflector'

@@ -11,6 +11,8 @@ module KingSoa
       self.auth = opts[:auth] if opts[:auth]
     end
 
+    # Call a service living somewhere in the soa universe. This is done by
+    # making a POST request to the url
     def call_remote(*args)
       set_request_opts(args)
       resp_code = @request.perform
@@ -22,18 +24,38 @@ module KingSoa
       end
     end
 
-    def perform(*args)
-      result = local_class ? local_class.send(:perform, *args) : call_remote(*args)
-      return result
+    # A queued method MUST have an associated resque worker running and the soa
+    # class MUST have the @queue attribute for redis set
+    def add_to_queue(*args)
+      # use low level resque method since class might not be local available for Resque.enqueue
+      Resque::Job.create(queue, local_class_name, *args)
     end
-    
+
+    # Call a method: remote over http, local or put a job onto a queue
+    # === Parameter
+    # args:: whatever arguments the service methods recieves. Those are later json
+    # encoded for remote or queued methods
+    def perform(*args)
+      if queue
+        add_to_queue(*args)
+        return nil
+      else
+        result = local_class ? local_class.send(:perform, *args) : call_remote(*args)
+        return result
+      end
+    end    
 
     def local_class
       @local_class ||= begin
-                        "#{self.name.to_s.camelize}".constantize
+                        local_class_name.constantize
                       rescue NameError => e        # no local implementation
                         false
                       end
+    end
+
+    # Return the classname infered from service name
+    def local_class_name
+      self.name.to_s.camelize
     end
 
     def request

@@ -5,10 +5,10 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "king_soa"
-    gem.summary = %Q{Registry and deployment description abstraction for SOA-Services by SalesKing}
+    gem.summary = %Q{Abstraction layer for SOA-Services }
     gem.description = <<-DESCRIPTION
 Creating a SOA requires a centralized location to define all services within the
-SOA. Furthermore you want to know where to deploy those services.
+SOA. KingSoa takes care of keeping services in a service registry and knows how to call them.
 DESCRIPTION
     gem.email = "gl@salesking.eu"
     gem.homepage = "http://github.com/salesking/king_soa"

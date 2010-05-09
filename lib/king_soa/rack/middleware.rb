@@ -11,8 +11,10 @@ module KingSoa::Rack
       if env["PATH_INFO"] =~ /^\/soa/
         begin
           req = Rack::Request.new(env)
-          # find service TODO rescue service not found
+          # find service
           service = KingSoa.find(req.params["name"])
+          #  TODO rescue service class not found
+          raise "The service: #{req.params["name"]} could not be found" unless service
           # authenticate
           authenticated?(service, req.params["auth"])
           # perform method with decoded params
@@ -32,7 +34,7 @@ module KingSoa::Rack
             encoded_error = service.encode({"error" => e})
             [500, {'Content-Type' => 'application/json', 'Content-Length' => "#{encoded_error.length}"}, [encoded_error]]
           else
-            encoded_error = {"error" => "An error occurred! (#{e.message})"}.to_json
+            encoded_error = {"error" => "An error occurred => #{e.message}"}.to_json
             [500, {'Content-Type' => "application/json", 'Content-Length' => "#{encoded_error.length}"}, [encoded_error]]
           end
         end

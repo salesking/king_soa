@@ -19,14 +19,10 @@ describe KingSoa::Rack::Middleware do
     rack_response.last.first.should == "{\"error\":\"An error occurred! (Missing rack.input)\"}"
   end
 
-  it "should handle result" do
+  xit "should handle result" do
     app = stub("ApplicationStub").as_null_object
     middleware = KingSoa::Rack::Middleware.new(app)
-    env = {"PATH_INFO" => "/soa", "name" => 'a_method'}
-
-    rack_response = middleware.call env
-    rack_response.first.should == 500 #status code
-    rack_response.last.should be_a_kind_of(Array)
-    rack_response.last.first.should == "{\"error\":\"An error occurred! (Missing rack.input)\"}"
+    env = {"PATH_INFO" => "/soa"}
+#    KingSoa.should_receive(:find).and_return(@service)
   end
 end
