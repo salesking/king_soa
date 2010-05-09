@@ -72,12 +72,12 @@ returns values or errors.
 === Local Services
 
 A local service calls a class with the CamelCased service name. This class MUST
-have a self.perform method which receives all of the givven arguments.
+have a self.perform method which receives all of the given arguments.
 
 === Queued Services
 
-The service is put onto a resque queue and somewhere in you cloud you should
-have a worker looing for it. The service class should also have the resque
+The service is put onto a resque queue and somewhere in your cloud you should
+have a worker looking for it. The service class should also have the resque
 @queue attribute set so the job can be resceduled if it fails.
 
 == Integration

@@ -2,11 +2,10 @@ module KingSoa
   class Service
     # endpoint url
     attr_accessor :debug, :name, :auth, :queue
-    attr_reader :request
     
     def initialize(opts)
       self.name = opts[:name].to_sym
-      self.url = opts[:url] if opts[:url]      
+      self.url = opts[:url] if opts[:url]
       self.queue = opts[:queue] if opts[:queue]
       self.auth = opts[:auth] if opts[:auth]
     end
@@ -14,13 +13,14 @@ module KingSoa
     # Call a service living somewhere in the soa universe. This is done by
     # making a POST request to the url
     def call_remote(*args)
-      set_request_opts(args)
-      resp_code = @request.perform
+      request = Typhoeus::Easy.new
+      set_request_opts(request, args)
+      resp_code = request.perform
       case resp_code
       when 200
-        return self.decode(@request.response_body)["result"]
+        return self.decode(request.response_body)["result"]
       else
-        return self.decode(@request.response_body)["error"]
+        return self.decode(request.response_body)["error"]
       end
     end
 
@@ -46,15 +46,15 @@ module KingSoa
         result = local_class ? local_class.send(:perform, *args) : call_remote(*args)
         return result
       end
-    end    
+    end
 
     # The local class, if found
     def local_class
-      @local_class ||= begin
-                        local_class_name.constantize
-                      rescue NameError => e        # no local implementation
-                        false
-                      end
+      begin
+        local_class_name.constantize
+      rescue NameError => e        # no local implementation
+        false
+      end
     end
 
     # Return the classname infered from the camelized service name.
@@ -63,18 +63,18 @@ module KingSoa
       self.name.to_s.camelize
     end
 
-    def request
-      @request ||= Typhoeus::Easy.new
-    end
-
-    def set_request_opts(args)
-      request.url         = url
-      request.method      = :post
-      request.timeout     = 100 # milliseconds
-      request.params      = params(args)
-      request.user_agent  = 'KingSoa'
-      request.follow_location = true      
-      request.verbose     = 1 if debug      
+    # Set options for the typhoeus curl request
+    # === Parameter
+    # req<Typhoeus::Easy>:: request object
+    # args<Array[]>:: the arguments for the soa method, will be json encoded and added to post body
+    def set_request_opts(req, args)
+      req.url         = url
+      req.method      = :post
+      req.timeout     = 10000 # milliseconds
+      req.params      = params(args)
+      req.user_agent  = 'KingSoa'
+      req.follow_location = true
+      req.verbose     = 1 if debug
     end
 
     # Url receiving the request
