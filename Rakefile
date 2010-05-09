@@ -17,10 +17,10 @@ DESCRIPTION
 
     gem.add_dependency "typhoeus"
     gem.add_dependency "json"
+    gem.add_dependency "resque"
     
     gem.add_development_dependency "rspec"
-#    gem.add_development_dependency "rack/test"
-#    gem.add_development_dependency "webmock"
+    gem.add_development_dependency "rack"
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError

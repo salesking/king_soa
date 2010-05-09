@@ -16,7 +16,7 @@ describe KingSoa::Rack::Middleware do
     rack_response = middleware.call env
     rack_response.first.should == 500 #status code
     rack_response.last.should be_a_kind_of(Array)
-    rack_response.last.first.should == "{\"error\":\"An error occurred! (Missing rack.input)\"}"
+    rack_response.last.first.should == "{\"error\":\"An error occurred => Missing rack.input\"}"
   end
 
   xit "should handle result" do

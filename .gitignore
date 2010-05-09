@@ -5,3 +5,4 @@ rdoc
 pkg
 nbproject
 .rake_tasks
+*.gem

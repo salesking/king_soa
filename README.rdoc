@@ -1,55 +1,124 @@
 = KingSoa
 
-Creating a SOA requires a centralized location to define all services within the
-SOA. Furthermore you want to know where those services live.
+KingSoa orchestrates a SOA landscape, by knowing where services live and how to
+call them.
 
-== Tech details
+== Why?
 
-the soa registry is keeping a bunch of service objects which know where a method
-lives. Methods are classes with an self.perform method and can be located local,
-remote(http) or beeing put onto a queue
+While your app is growing you stuff more and more in it, unrelated to its core
+business intelligence. You'll end up with an monolythic clumsy piece, getting
+harder to handle every day. Just think of: scalability, testing, deployment, ..
 
+To keep it clean a division of responsibilities, and with it a separation into
+smaller parts, is needed. But now you've got a communication problem, because
+each part needs to know about the others. This is where KingSoa enters the stage.
 
 
 == Install
 
     gem install king_soa
 
+== Dependencies
+
+Needed gems:
+
+* resque => When a service has a queue set, its enqueued via resque
+* typhoeus => making http requests to remotely located services
+* json => all arguments of a service call are json encoded
+
 == Define services
 
-=== Low Level
+The service registry(KingSoa::Registry) is keeping track of available
+services and behaves more or less like an array. Be aware that KingSoa::Registry
+is a singleton, so that the rack middleware and your app are seeing the same.
+
+A service (KingSoa::Service) has a name and knows how its gonna be called.
+A service call goes out to a class named like the CamelCased service.name with
+an self.perform method. Depending on the service settings it can be located
+local, remote(http) or beeing put onto a queue.
 
 You can define services anywhere in your app and add them to the service
-registry.
-Be aware that the registry is a singleton, so that the rack middleware and your
-app are seeing the same :
-    # create the service
-     service = KingSoa::Service.new(:name=>:increment_usage,
-                                    :url=>'http://localhost:4567',
-                                    :auth_key=>'12345')
-     # register
-     KingSoa::Registry << service
+registry. This should most likely be done in an initalizer(Rails).
 
-     # somewhere in your app just call your service method
-     KingSoa.increment_usage(12)
+  # A remote service MUST have an url and an auth key set
+  a = KingSoa::Service.new(:name => :increment_usage,
+                        :url  => 'http://localhost:4567',
+                        :auth => '12345')
 
-A service name is always required. If the service is to be called remotely you
-must add a url and an auth_key.
-The transport is done via http calls, so to make it secure you should either use
-https in public or hide the servers somwhere on your farm.
+  # A local service calling CrunchImage.perform
+  b = KingSoa::Service.new(:name => :crunch_image)
+
+  # A queued service MUST have a queue name, and of course you should have a worker looking for it
+  c = KingSoa::Service.new(:name => :delete_user,
+                           :queue => :deletions)
+  # register all of them
+  KingSoa::Registry << a << b << c
+
+  # somewhere in your app just call the services
+  KingSoa.increment_usage(12)
+  KingSoa.crunch_image(image_path)
+  KingSoa.delete_user(user_id)
+
+=== Remote Services
+
+The transport is done via http calls. All http calls have an authentication key 
+to provide some minimal access restriction. To make it secure you should either
+use https in public or hide the endpoints somwhere on your farm.
+
+Service endpoints receiving such calls need to use the provided rack middleware.
+The middleware is doing the authentication, executing the service class and
+returns values or errors.
+
+=== Local Services
+
+A local service calls a class with the CamelCased service name. This class MUST
+have a self.perform method which receives all of the givven arguments.
+
+=== Queued Services
+
+The service is put onto a resque queue and somewhere in you cloud you should
+have a worker looing for it. The service class should also have the resque
+@queue attribute set so the job can be resceduled if it fails.
 
 == Integration
 
+Just think of a buch of small sinatra or specialized rails apps, each having
+some internal services and consuming services from others.
+
 === Rails
 
+Add the middleware(application.rb/environment.rb) if you want to receive calls.
+    require 'king_soa'
+    config.middleware.use KingSoa::Rack::Middleware
+
+Setup services for example in an initializer reading a services.yml file. For 
+now there is no convinience loading method and no proposed yml format.
+    #services.yml
+    sign_document:
+      queue: signings
+    send_sms:
+      url: 'http://messaging.localhost:3000'
+      auth: '12345678'
+
+    # king_soa_init 
+    service_defs = YAML.load_file(File.join(RAILS_ROOT, 'config', 'services.yml'))
+    service_defs.each do |k, v|      
+      opts = { :name => k }     
+      [:url, :auth, :queue].each do |opt|
+        opts[opt] = v[opt.to_s] if v[opt.to_s]
+      end
+      KingSoa::Registry << KingSoa::Service.new(opts)
+    end
 
 === Sinatra
 
 Take a look at spec/server/app where you can see a minimal sinatra implementation
 The base is just:
+
     require 'king_soa'
     use KingSoa::Rack::Middleware
-    
+
+The service definition should of course also be done, see rails example.
  
 == Note on Patches/Pull Requests
  

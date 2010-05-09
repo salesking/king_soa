@@ -10,7 +10,6 @@ describe KingSoa::Service do
 end
 
 describe KingSoa::Service, 'local request' do
-
   it "should call service" do
     s = KingSoa::Service.new(:name=>:local_soa_class)
     s.perform(1,2,3).should == [1,2,3]
@@ -26,7 +25,6 @@ describe KingSoa::Service, 'queued' do
 end
 
 describe KingSoa::Service, 'remote request' do
-
   before :all do
     start_test_server
   end

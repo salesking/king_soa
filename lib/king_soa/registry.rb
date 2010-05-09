@@ -33,17 +33,24 @@ module KingSoa
       @services ||= []
     end
 
-    # Add a new method onto the stack
+    # Add a new service onto the stack
+    # === Parameter
+    # service<KingSoa::Service>:: the service to add
     def <<(service)
       (services || []) << service
     end
 
     # Get a method by a given name
+    # === Parameter
+    # service_name<String|Symbol>:: the service to find
+    # === Returns
+    # <KingSoa::Service> or <nil>
     def [](service_name)
       name = service_name.to_sym
       services.detect {|s| s.name == name }
     end
 
+    # untested
     def group(service_name)
       name = service_name.to_sym
 #      srvs = []

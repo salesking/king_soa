@@ -31,7 +31,10 @@ module KingSoa
       Resque::Job.create(queue, local_class_name, *args)
     end
 
-    # Call a method: remote over http, local or put a job onto a queue
+    # Call a method:
+    #  * remote over http
+    #  * local by calling perform method on a class
+    #  * put a job onto a queue
     # === Parameter
     # args:: whatever arguments the service methods recieves. Those are later json
     # encoded for remote or queued methods
@@ -45,6 +48,7 @@ module KingSoa
       end
     end    
 
+    # The local class, if found
     def local_class
       @local_class ||= begin
                         local_class_name.constantize
@@ -53,7 +57,8 @@ module KingSoa
                       end
     end
 
-    # Return the classname infered from service name
+    # Return the classname infered from the camelized service name.
+    # A service named: save_attachment => class SaveAttachment
     def local_class_name
       self.name.to_s.camelize
     end
