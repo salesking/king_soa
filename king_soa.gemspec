@@ -5,13 +5,13 @@
 
 Gem::Specification.new do |s|
   s.name = %q{king_soa}
-  s.version = "0.0.1"
+  s.version = "0.0.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Georg Leciejewski"]
-  s.date = %q{2010-05-08}
+  s.date = %q{2010-05-09}
   s.description = %q{Creating a SOA requires a centralized location to define all services within the
-SOA. Furthermore you want to know where to deploy those services.
+SOA. KingSoa takes care of keeping services in a service registry and knows how to call them.
 }
   s.email = %q{gl@salesking.eu}
   s.extra_rdoc_files = [
@@ -34,7 +34,7 @@ SOA. Furthermore you want to know where to deploy those services.
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.6}
-  s.summary = %q{Registry and deployment description abstraction for SOA-Services by SalesKing}
+  s.summary = %q{Abstraction layer for SOA-Services}
   s.test_files = [
     "spec/spec_helper.rb",
      "spec/king_soa/registry_spec.rb",
