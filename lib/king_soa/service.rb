@@ -5,9 +5,9 @@ module KingSoa
     
     def initialize(opts)
       self.name = opts[:name].to_sym
-      self.url = opts[:url] if opts[:url]
-      self.queue = opts[:queue] if opts[:queue]
-      self.auth = opts[:auth] if opts[:auth]
+      [:url, :queue,:auth, :debug ].each do |opt|
+        self.send("#{opt}=", opts[opt]) if opts[opt]
+      end     
     end
 
     # Call a service living somewhere in the soa universe. This is done by
