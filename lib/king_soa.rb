@@ -3,6 +3,9 @@ require 'resque'
 require 'json'
 require 'typhoeus'
 require 'active_support/inflector'
+# Rails 3.0
+#require 'active_support'
+#require 'active_support/core_ext/string'
 
 require 'king_soa/registry'
 require 'king_soa/service'
@@ -27,7 +30,7 @@ module KingSoa
       if service = Registry[meth]
         service.perform(*args)
       else
-        super
+        super(meth, *args, &blk)
       end
     end
   end

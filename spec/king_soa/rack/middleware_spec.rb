@@ -26,3 +26,11 @@ describe KingSoa::Rack::Middleware do
 #    KingSoa.should_receive(:find).and_return(@service)
   end
 end
+
+#
+# von bumi
+#referer = "http://google.com"
+#    env = Rack::MockRequest.env_for "http://payango.com", :method => "GET", "HTTP_REFERER" => referer
+#    app = mock('app')
+#    app.expects(:call).with(has_entry("X_EXTERNAL_REFERER", referer))
+#    response = Middleware::Referer.new(app).call(env)

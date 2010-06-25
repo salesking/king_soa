@@ -1,14 +1,22 @@
 module KingSoa::Rack
   class Middleware
 
-    def initialize(app)
+    # === Params
+    # app:: Application to call next
+    # config<Hash{Symbol=>String}>::
+    # === config hash
+    # :endpoint_path<RegEx>:: Path which is getting all incoming soa requests.
+    # Defaults to /^\/soa/ => /soa
+    # Make sure your service url's have it set too.
+    def initialize(app, config={})
       @app = app
+      @config = config
+      @config[:endpoint_path] ||= /^\/soa/
     end
 
     # Takes incoming soa requests and calls the passed in method with given params
     def call(env)
-#      Hoth::Logger.debug "env: #{env.inspect}"
-      if env["PATH_INFO"] =~ /^\/soa/
+      if env["PATH_INFO"] =~ @config[:endpoint_path]
         begin
           req = Rack::Request.new(env)
           # find service
@@ -29,7 +37,6 @@ module KingSoa::Rack
           ]
 
         rescue Exception => e
-          #Hoth::Logger.debug "e: #{e.message}"
           if service
             encoded_error = service.encode({"error" => e})
             [500, {'Content-Type' => 'application/json', 'Content-Length' => "#{encoded_error.length}"}, [encoded_error]]

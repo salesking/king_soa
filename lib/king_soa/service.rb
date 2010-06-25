@@ -1,11 +1,21 @@
 module KingSoa
   class Service
-    # endpoint url
-    attr_accessor :debug, :name, :auth, :queue
+
+    # name<String/Symbol>:: name of the service class to call
+    # auth<String/Int>:: password for the remote service. Used by rack middleware
+    # to authentify the callee
+    # url<String>:: Url where the service is located. If the rack middleware is
+    # used on the receiving side, make sure to append /soa to the url so the
+    # middleware can grab the incoming call. A custom endpoint path can be set in
+    # the middleware.
+    # queue<Boolean>:: turn on queueing for this service call. The incoming
+    # request(className+parameter) will be put onto a resque queue
+    # debug<Boolean>:: turn on verbose outpur for typhoeus request
+    attr_accessor :debug, :name, :auth, :queue, :url
     
     def initialize(opts)
       self.name = opts[:name].to_sym
-      [:url, :queue,:auth, :debug ].each do |opt|
+      [:url, :queue, :auth, :debug ].each do |opt|
         self.send("#{opt}=", opts[opt]) if opts[opt]
       end     
     end
@@ -18,9 +28,19 @@ module KingSoa
       resp_code = request.perform
       case resp_code
       when 200
-        return self.decode(request.response_body)["result"]
+        if request.response_header.include?('Content-Type: application/json')
+          #decode incoming json .. most likely from KingSoa's rack middleware
+          return self.decode(request.response_body)["result"]
+        else # return plain body
+          return request.response_body
+        end
       else
-        return self.decode(request.response_body)["error"]
+        if request.response_header.include?('Content-Type: application/json')
+          #decode incoming json .. most likely from KingSoa's rack middleware
+          return self.decode(request.response_body)["error"]
+        else # return plain body
+          return request.response_body
+        end
       end
     end
 
@@ -36,13 +56,17 @@ module KingSoa
     #  * local by calling perform method on a class
     #  * put a job onto a queue
     # === Parameter
-    # args:: whatever arguments the service methods recieves. Those are later json
-    # encoded for remote or queued methods
+    # args:: whatever arguments the service methods receives. A local service/method
+    # gets thems as splatted params. For a remote service they are converted to
+    # json
+    # === Returns
+    # <nil> for queued services dont answer
+    # <mixed> Whatever the method/service
     def perform(*args)
       if queue
         add_to_queue(*args)
         return nil
-      else
+      else # call the local class if present, else got remote
         result = local_class ? local_class.send(:perform, *args) : call_remote(*args)
         return result
       end
@@ -57,8 +81,9 @@ module KingSoa
       end
     end
 
-    # Return the classname infered from the camelized service name.
-    # A service named: save_attachment => class SaveAttachment
+    # Return the class name infered from the camelized service name.
+    # === Example
+    # save_attachment => class SaveAttachment
     def local_class_name
       self.name.to_s.camelize
     end
@@ -66,7 +91,7 @@ module KingSoa
     # Set options for the typhoeus curl request
     # === Parameter
     # req<Typhoeus::Easy>:: request object
-    # args<Array[]>:: the arguments for the soa method, will be json encoded and added to post body
+    # args<Array[]>:: arguments for the soa method, added to post body json encoded
     def set_request_opts(req, args)
       req.url         = url
       req.method      = :post
@@ -77,20 +102,12 @@ module KingSoa
       req.verbose     = 1 if debug
     end
 
-    # Url receiving the request
-    # TODO. if not present try to grab from endpoint
-    def url
-      @url
-    end
-    def url=(url)
-      @url = "#{url}/soa"
-    end
-
-    # The params for each soa request consist of following values:
-    #    name => the name of the method to call
-    #    args => the arguments for the soa class method
-    #    auth => an authentication key. something like a api key or pass. To make
-    # it really secure you MUST use https or do not expose your soa endpoints
+    # Params for a soa request consist of following values:
+    # name => name of the soa class to call
+    # args => arguments for the soa class method -> Class.perform(args)
+    # auth => an authentication key. something like a api key or pass. To make
+    # it really secure you MUST use https or hide your soa endpoints from public 
+    # web acces
     #
     # ==== Parameter
     # payload<Hash|Array|String>:: will be json encoded

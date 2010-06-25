@@ -66,7 +66,7 @@ to provide some minimal access restriction. To make it secure you should either
 use https in public or hide the endpoints somwhere on your farm.
 
 Service endpoints receiving such calls need to use the provided rack middleware.
-The middleware is doing the authentication, executing the service class and
+As the middleware is doing the authentication, executing the service class and
 returns values or errors.
 
 === Local Services
@@ -79,6 +79,12 @@ have a self.perform method which receives all of the given arguments.
 The service is put onto a resque queue and somewhere in your cloud you should
 have a worker looking for it. The service class should also have the resque
 @queue attribute set so the job can be resceduled if it fails.
+
+=== Gotchas
+
+* make sure to define the service on the sender side with the appropriate url
+* define the local service(called from remote) with the right auth key
+* double check your auth keys(a string is not an int), to be save use "strings" esp. when loading from yml
 
 == Integration
 
@@ -119,13 +125,18 @@ The base is just:
     use KingSoa::Rack::Middleware
 
 The service definition should of course also be done, see rails example.
- 
+
+== ToDo
+
+* better error logging
+* a central server & clients getting definitions from it
+
 == Note on Patches/Pull Requests
  
 * Fork the project.
 * Make your feature addition or bug fix.
 * Add tests for it. This is important so I don't break it in a future version unintentionally.
-* Commit, do not mess with rakefile, version, or history. (if you want to have your own version, that is fine but bump version in a commit by itself I can ignore when I pull)
+* Commit, do not mess with rakefile, version, or history. (if you want to have your own version, that is fine but bump version in a branch or commit by itself so I can ignore when I pull)
 * Send me a pull request. Bonus points for topic branches.
 
 == Copyright
