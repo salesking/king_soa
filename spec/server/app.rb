@@ -20,6 +20,16 @@ post '/non_json_response' do
   "<h1>hello World</h1>"
 end
 
+delete "/delete_test" do
+  "ereased the sucker"
+end
+put "/put_test" do
+  "put it down"
+end
+get "/get_test" do
+  "go get it"
+end
+
 ################################################################################
 # Somewhere in you app you define a local service, receiving the incoming call
 #

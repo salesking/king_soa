@@ -2,16 +2,16 @@ module KingSoa
   class Service
 
     # name<String/Symbol>:: name of the service class to call
+    #
     # auth<String/Int>:: password for the remote service. Used by rack middleware
     # to authentify the callee
-    # url<String>:: Url where the service is located. If the rack middleware is
-    # used on the receiving side, make sure to append /soa to the url so the
-    # middleware can grab the incoming call. A custom endpoint path can be set in
-    # the middleware.
+    #
+    #
     # queue<Boolean>:: turn on queueing for this service call. The incoming
     # request(className+parameter) will be put onto a resque queue
-    # debug<Boolean>:: turn on verbose outpur for typhoeus request
-    attr_accessor :debug, :name, :auth, :queue, :url
+    #
+    # debug<Boolean>:: turn on verbose output for typhoeus request
+    attr_accessor :debug, :name, :auth, :queue, :request_method
     
     def initialize(opts)
       self.name = opts[:name].to_sym
@@ -36,12 +36,16 @@ module KingSoa
         end
       else
         if request.response_header.include?('Content-Type: application/json')
-          #decode incoming json .. most likely from KingSoa's rack middleware
+          #decode incoming json carriing an error.. most likely from KingSoa's rack middleware
           return self.decode(request.response_body)["error"]
         else # return plain body
           return request.response_body
         end
       end
+    end
+
+    def parse_response
+
     end
 
     # A queued method MUST have an associated resque worker running and the soa
@@ -94,12 +98,43 @@ module KingSoa
     # args<Array[]>:: arguments for the soa method, added to post body json encoded
     def set_request_opts(req, args)
       req.url         = url
-      req.method      = :post
+      req.method      = request_method || :post
       req.timeout     = 10000 # milliseconds
       req.params      = params(args)
       req.user_agent  = 'KingSoa'
       req.follow_location = true
       req.verbose     = 1 if debug
+    end
+
+    #=== Params
+    #url_string<String>::service location to call.
+    #
+    # 
+    # POST(default)
+    # http://myUrl.com
+    # http://myUrl.com:3000/my_path
+    # http://myUrl.com:3000/soa
+    #
+    # Request types can be defined within url string:
+    #   GET http://myUrl.com
+    #   DELETE http://myUrl.com:3000/my_path
+    #   PUT http://myUrl.com:3000/soa
+    #   POST http://myUrl.com:3000/custom_post_receiving_path
+    # 
+    # === Returns
+    # url<String>:: service Url
+    #
+    def url=(url_string)
+      # grab leading req type, case-insensitive
+      if req_type = url_string[/^(GET|POST|PUT|DELETE)/i, 0]
+        @request_method = req_type.downcase.to_sym
+      end
+      # grab only url string starting with ht until its end
+      @url = url_string[/ht.*/i, 0]
+    end
+
+    def url
+      @url
     end
 
     # Params for a soa request consist of following values:
