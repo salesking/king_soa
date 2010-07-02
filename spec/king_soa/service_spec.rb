@@ -17,8 +17,13 @@ describe KingSoa::Service, 'in general' do
     s.request_method.should == :get
 
     s.url = "DELETE https://whatever"
+    s.raw_url.should == "DELETE https://whatever"
     s.url.should == "https://whatever"
     s.request_method.should == :delete
+
+    s.url = "PUT https://localhost:3000"
+    s.url.should == "https://localhost:3000"
+    s.request_method.should == :put
   end
 
   it "should parse url with invalid request type" do
@@ -72,6 +77,24 @@ describe KingSoa::Service, 'remote request' do
   it "should call remote service without middleware and return plain text" do
     s = KingSoa::Service.new(:name=>:non_soa_test_service, :url=> "#{test_url}/non_json_response")
     s.perform().should == "<h1>hello World</h1>"
+  end
+
+  it "should GET remote service with params added to url and return params" do
+    s = KingSoa::Service.new(:name=>:non_soa_test_service,
+                              :url=> "GET #{test_url}/get_with_params_test",
+                              :auth=>'12345' )
+    s.request_method.should == :get
+    s.perform(:opt_one=>'hi').should == "name=>non_soa_test_service, args=>[{\"opt_one\":\"hi\"}], auth=>12345"
+  end
+  
+  it "should GET remote service with multiple params" do
+    s = KingSoa::Service.new(:name=>:non_soa_test_service,
+                              :url=> "GET #{test_url}/get_with_params_test",
+                              :auth=>'12345' )
+    s.request_method.should == :get
+    res = s.perform(:opt_one=>'hi', :opt_two=>'there' )
+    res.should include("\"opt_one\":\"hi\"")
+    res.should include("\"opt_two\":\"there\"")
   end
 
   it "should GET remote service and return plain text" do

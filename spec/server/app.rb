@@ -9,6 +9,10 @@ require "king_soa"
 # this grabs all /soa requests
 use KingSoa::Rack::Middleware
 
+################################################################################
+# Sinatra endpoints
+################################################################################
+
 #  method to kill this server instance
 get '/die' do
   exit!
@@ -23,11 +27,21 @@ end
 delete "/delete_test" do
   "ereased the sucker"
 end
+
 put "/put_test" do
   "put it down"
 end
+
 get "/get_test" do
   "go get it"
+end
+
+get "/get_with_params_test" do
+  str = []
+  params.each do |k,v|
+    str << "#{k}=>#{v}"
+  end
+  str.join(', ')
 end
 
 ################################################################################

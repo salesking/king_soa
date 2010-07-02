@@ -11,7 +11,12 @@ module KingSoa
     # request(className+parameter) will be put onto a resque queue
     #
     # debug<Boolean>:: turn on verbose output for typhoeus request
+    #
+    # request_method<Symbol>:: :get :post, :put : delete, used for curl request
+    
     attr_accessor :debug, :name, :auth, :queue, :request_method
+    # raw_url<String>:: raw incoming url string with request method prefixed "GET http://whatever"
+    attr_reader :raw_url
     
     def initialize(opts)
       self.name = opts[:name].to_sym
@@ -129,6 +134,7 @@ module KingSoa
       if req_type = url_string[/^(GET|POST|PUT|DELETE)/i, 0]
         @request_method = req_type.downcase.to_sym
       end
+      @raw_url = url_string
       # grab only url string starting with ht until its end
       @url = url_string[/ht.*/i, 0]
     end
