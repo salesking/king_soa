@@ -31,6 +31,10 @@ module KingSoa
       request = Typhoeus::Easy.new
       set_request_opts(request, args)
       resp_code = request.perform
+      parse_response(resp_code, request)
+    end
+
+    def parse_response(resp_code, request)
       case resp_code
       when 200
         if request.response_header.include?('Content-Type: application/json')
@@ -47,10 +51,6 @@ module KingSoa
           return request.response_body
         end
       end
-    end
-
-    def parse_response
-
     end
 
     # A queued method MUST have an associated resque worker running and the soa

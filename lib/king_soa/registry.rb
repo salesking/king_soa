@@ -21,7 +21,7 @@ module KingSoa
 
     # find a group of services identified by starting with the same string
     #
-    def group(name)
+    def self.group(name)
       instance.group(name)
     end
     ############################################################################
@@ -52,9 +52,7 @@ module KingSoa
 
     # untested
     def group(service_name)
-      name = service_name.to_sym
-#      srvs = []
-      services.collect {|s| s.name[/^#{name}/] }
+      services.select {|s| !s.name.to_s.match(/^#{service_name}/).nil? }
     end
 
 
