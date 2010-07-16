@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{king_soa}
-  s.version = "0.0.5"
+  s.version = "0.0.6"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Georg Leciejewski"]
-  s.date = %q{2010-06-29}
+  s.date = %q{2010-07-16}
   s.description = %q{Creating a SOA requires a centralized location to define all services within the
 SOA. KingSoa takes care of keeping services in a service registry and knows how to call them.
 }
