@@ -3,7 +3,7 @@
 KingSoa orchestrates a SOA landscape, by knowing where services live and how to
 call them. It exposes service calls as ruby methods (KingSoa.my_method)
 which are transfered into http rpc or local method calls.
-KingSoa lives on the sender and receiver side, but dont worry it only has two classes.
+KingSoa lives on the sender and receiver side.
 
 == Why?
 
@@ -24,7 +24,7 @@ each part needs to know about the others. This is where KingSoa enters the stage
 * resque => When a service has a queue set, its enqueued via resque
 * typhoeus => making http requests to remotely located services
 * json => all arguments of a service call are json encoded(on send)
-* active_support
+* activesupport
 
 == Usage
 
@@ -79,7 +79,7 @@ A simple service class, located in the app above
     end
   end
 
-=== Remote Services
+==== Remote Services
 
 All transport is done over http. An http call can have an authentication key
 to provide some minimal access restriction. To make it secure you should either
@@ -96,10 +96,10 @@ returns values or errors.
 Service options
 * :name => KingSoa.increment_usage calls IncrementUsage.perform
 * :url => url to which the request goes out in form of '[method] URL:Port'
-** 'http://my_uri' =>defaults to a POST request without http verb
-** 'GET http://my_uri:6969' => GET to port 6969
-** 'DELETE http://my_uri'
-** 'PUT http://my_uri:6669'
+  * '\http://my_uri' =>defaults to a POST request without http verb
+  * 'GET \http://my_uri:6969' => GET to port 6969
+  * 'DELETE \http://my_uri'
+  * 'PUT \http://my_uri:6669'
 * :auth => optional authentication string OR integer, should also be known
 (defined) on the receiving side.
 
@@ -122,7 +122,7 @@ to you to check or validate the existence of arguments and work with return valu
   # translates into
   CrunchImage.perform('/path')
 
-=== Queued Services
+==== Queued Services
 
 The service is put onto a resque queue and somewhere in your cloud you should
 have a worker looking for it. The service class should also have the resque
@@ -143,7 +143,7 @@ Service options
     end
   end
 
-=== Gotchas
+==== Gotchas
 
 * make sure to define the service on the sender side with the appropriate url
 * define the local service(called from remote) with the right auth key
