@@ -100,8 +100,7 @@ Service options
   'GET h ttp://my_uri:6969':: GET to port 6969
   'DELETE h_ttp://my_uri':: DELETE request
   'PUT h_ttp://my_uri:6669':: PUT it down
-* :auth => optional authentication string OR integer, should also be known
-(defined) on the receiving side.
+* :auth => optional authentication string OR integer, should also be known (defined) on the receiving side.
 
 The remote side is always called the following url parameters. And its up to
 you to handle those, if you are NOT using the rack middleware.
@@ -131,11 +130,10 @@ Queued methods can not have return values => fire & forget
 
   KingSoa::Service.new(:name => :delete_user,
                        :queue => :deletions)
-Service options
 
 :queue => name of the queue as defined by resque. Actually used as prefix in redis
-
-  # receiving resque worker class
+Example of a receiving resque worker class:
+ 
   class DeleteUser
     @queue = :deletions
     self.perform(user_id)
@@ -171,8 +169,8 @@ The middleware, by default, grabs all incoming request to my_url/soa. This
 behaviour can be customized when setting it up:
 
   config.middleware.use KingSoa::Rack::Middleware, :endpoint_path =>'/incoming_soa'
-  # grabs alle requests to 
-  http://my_url/incoming_soa
+
+grabs all requests to:  my_url/incoming_soa
 
 == Integration
 
