@@ -13,11 +13,6 @@ use KingSoa::Rack::Middleware
 # Sinatra endpoints
 ################################################################################
 
-#  method to kill this server instance
-get '/die' do
-  exit!
-end
-
 # A non king_soa method => rack middleware is not used
 # Still such methods can be called and their result is returned as plain text
 post '/non_json_response' do
@@ -44,6 +39,11 @@ get "/get_with_params_test" do
   str.join(', ')
 end
 
+# helper method to kill this server instance ins tests
+get '/die' do
+  exit!
+end
+
 ################################################################################
 # Somewhere in you app you define a local service, receiving the incoming call
 #
@@ -51,7 +51,7 @@ end
 service = KingSoa::Service.new(:name=>'soa_test_service', :auth => '12345')
 KingSoa::Registry << service
 
-# the local soa class beeing called
+# Local soa class inside this app. Beeing called from remote as a receiver
 class SoaTestService
   #simply return all given parameters
   def self.perform(param1, param2, param3)

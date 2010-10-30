@@ -33,7 +33,7 @@ module KingSoa::Rack
           [
             200,
             {'Content-Type' => 'application/json', 'Content-Length' => "#{encoded_result.length}"},
-            [encoded_result] 
+            [encoded_result]
           ]
 
         rescue Exception => e

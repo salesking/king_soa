@@ -1,7 +1,9 @@
 = KingSoa
 
 KingSoa orchestrates a SOA landscape, by knowing where services live and how to
-call them.
+call them. It exposes service calls as ruby methods (KingSoa.my_method)
+which are transfered into http rpc or local method calls.
+KingSoa lives on the sender and receiver side, but dont worry it only has two classes.
 
 == Why?
 
@@ -13,39 +15,49 @@ To keep it clean a division of responsibilities, and with it a separation into
 smaller parts, is needed. But now you've got a communication problem, because
 each part needs to know about the others. This is where KingSoa enters the stage.
 
-
 == Install
 
     gem install king_soa
 
-== Dependencies
-
-Needed gems:
+=== Gem Dependencies
 
 * resque => When a service has a queue set, its enqueued via resque
 * typhoeus => making http requests to remotely located services
-* json => all arguments of a service call are json encoded
+* json => all arguments of a service call are json encoded(on send)
+* active_support
 
-== Define services
+== Usage
+
+Take your time and READ the code, its only three files with combined 180 lines
+of code and lots of documentation. The tests with a high coverage serve as
+another great source of information.
+
+Simply put: <b>RTFC</b>(Read The Fucking Code) and <b>RTFT</b>
+
+=== The Service Registry
 
 The service registry(KingSoa::Registry) is keeping track of available
 services and behaves more or less like an array. Be aware that KingSoa::Registry
 is a singleton, so that the rack middleware and your app are seeing the same.
 
-A service (KingSoa::Service) has a name and knows how its gonna be called.
-A service call goes out to a class named like the CamelCased service.name with
-an self.perform method. Depending on the service settings it can be located
-local, remote(http) or beeing put onto a queue.
+=== A Service
+
+A service(KingSoa::Service) has a name and two settings(queue or url) defining
+how it is being called. The actual service class can be located local,
+remote(http) or somewhere in a worker when beeing queued.
+The service call is received by a self.perform method of a class named like the
+CamelCased service.name. It is up to you define service arguments or define and
+use return values.
 
 You can define services anywhere in your app and add them to the service
 registry. This should most likely be done in an initalizer(Rails).
 
   # A remote service MUST have an url and an auth key set
-  a = KingSoa::Service.new(:name => :increment_usage,
-                        :url  => 'http://localhost:4567',
-                        :auth => '12345')
+  a = KingSoa::Service.new( :name => :increment_usage,
+                            :url  => 'http://localhost:4567',
+                            :auth => '12345')
 
-  # A local service calling CrunchImage.perform
+  # A local service(NO url) calling CrunchImage.perform
   b = KingSoa::Service.new(:name => :crunch_image)
 
   # A queued service MUST have a queue name, and of course you should have a worker looking for it
@@ -54,37 +66,113 @@ registry. This should most likely be done in an initalizer(Rails).
   # register all of them
   KingSoa::Registry << a << b << c
 
-  # somewhere in your app just call the services
-  KingSoa.increment_usage(12)
+  # somewhere in your app just call the services. All arguments MUST be json encodable!!
   KingSoa.crunch_image(image_path)
+  KingSoa.increment_usage(12)  
   KingSoa.delete_user(user_id)
+
+A simple service class, located in the app above
+
+  class IncrementUsage
+    self.perform(value)
+      current_user.update_attribute(:usage, value)
+    end
+  end
 
 === Remote Services
 
-The transport is done via http calls. All http calls have an authentication key 
+All transport is done over http. An http call can have an authentication key
 to provide some minimal access restriction. To make it secure you should either
-use https in public or hide the endpoints somwhere on your farm.
+use https in public or hide the endpoints somewhere on your farm.
 
-Service endpoints receiving such calls need to use the provided rack middleware.
-As the middleware is doing the authentication, executing the service class and
+Service endpoints receiving authenticated calls should use the provided rack
+middleware. As it is doing the authentication, executing the service class and
 returns values or errors.
+
+  KingSoa::Service.new( :name => :increment_usage,
+                        :url  => 'http://localhost:4567',
+                        :auth => '12345')
+
+Service options
+* :name => KingSoa.increment_usage calls IncrementUsage.perform
+* :url => url to which the request goes out in form of '[method] URL:Port'
+** 'http://my_uri' =>defaults to a POST request without http verb
+** 'GET http://my_uri:6969' => GET to port 6969
+** 'DELETE http://my_uri'
+** 'PUT http://my_uri:6669'
+* :auth => optional authentication string OR integer, should also be known
+(defined) on the receiving side.
+
+The remote side is always called the following url parameters. And its up to
+you to handle those, if you are NOT using the rack middleware.
+
+  http://my_uri?name=increment_usage
+               &auth=1234
+               &args={12}    #json encoded args as string
 
 === Local Services
 
 A local service calls a class with the CamelCased service name. This class MUST
-have a self.perform method which receives all of the given arguments.
+have a self.perform method which receives all of the given arguments. It is up
+to you to check or validate the existence of arguments and work with return values.
+
+  KingSoa::Service.new(:name => :crunch_image)
+  # call service
+  KingSoa.crunch_image('/path')
+  # translates into
+  CrunchImage.perform('/path')
 
 === Queued Services
 
 The service is put onto a resque queue and somewhere in your cloud you should
 have a worker looking for it. The service class should also have the resque
-@queue attribute set so the job can be resceduled if it fails.
+@queue attribute set so the job can be rescheduled if it fails.
+Queued methods can not have return values => fire & forget
+
+  KingSoa::Service.new(:name => :delete_user,
+                       :queue => :deletions)
+Service options
+
+:queue => name of the queue as defined by resque. Actually used as prefix in redis
+
+  # receiving resque worker class
+  class DeleteUser
+    @queue = :deletions
+    self.perform(user_id)
+      User.destroy(user_id)
+    end
+  end
 
 === Gotchas
 
 * make sure to define the service on the sender side with the appropriate url
 * define the local service(called from remote) with the right auth key
 * double check your auth keys(a string is not an int), to be save use "strings" esp. when loading from yml
+
+== Rack Middleware
+
+The included middleware provides some convinience on the receiving side. It does
+the authentication and relies on json for incoming requests and outgoing responses.
+For incomming request the url param[args] is automaticly json decoded.
+
+Response on success
+  HTTP/1.0 200 OK
+  Content-Type: application/json
+  Content-Length: 1234
+  '{result:{whatever you return .. if you care}}'
+
+Response on error
+  HTTP/1.0 500 Server Error
+  Content-Type: application/json
+  Content-Length: 1234
+  '{error:'error msg as string'}'
+
+The middleware, by default, grabs all incoming request to my_url/soa. This
+behaviour can be customized when setting it up:
+
+  config.middleware.use KingSoa::Rack::Middleware, :endpoint_path =>'/incoming_soa'
+  # grabs alle requests to 
+  http://my_url/incoming_soa
 
 == Integration
 
@@ -129,7 +217,7 @@ The service definition should of course also be done, see rails example.
 == ToDo
 
 * better error logging
-* a central server & clients getting definitions from it
+* a central server with clients getting service definitions from it
 
 == Note on Patches/Pull Requests
  

@@ -26,7 +26,9 @@ module KingSoa
     end
 
     # Call a service living somewhere in the soa universe. This is done by
-    # making a POST request to the url
+    # making a request(defaults to POST) to the url.
+    # === Parameter
+    # args<MultipleMixed>:: arguments passed to the service method. Each one MUST be json encodable
     def call_remote(*args)
       request = Typhoeus::Easy.new
       set_request_opts(request, args)
@@ -34,27 +36,31 @@ module KingSoa
       parse_response(resp_code, request)
     end
 
+    # parse the services response
+    # === Parameter
+    # resp_code<Integer>::
+    # request<Typhoeus::Easy>::
+    # === Returns
+    # <String>:: plain response body if the content type is not json
+    # <Object>:: json decoded response_body if the content type is json
+    # if the resonse code is 200, the response body MUST include a result object on top level
+    # {result:{my stringified json object}}
+    # if the resonse code NOT 200, the response body MUST include a error object on top level
+    # {error:{my stringified json error}}
     def parse_response(resp_code, request)
-      case resp_code
-      when 200
-        if request.response_header.include?('Content-Type: application/json')
-          #decode incoming json .. most likely from KingSoa's rack middleware
-          return self.decode(request.response_body)["result"]
-        else # return plain body
-          return request.response_body
-        end
-      else
-        if request.response_header.include?('Content-Type: application/json')
-          #decode incoming json carriing an error.. most likely from KingSoa's rack middleware
-          return self.decode(request.response_body)["error"]
-        else # return plain body
-          return request.response_body
-        end
+      if request.response_header.include?('Content-Type: application/json')
+        #decode incoming json carrying an error or result. most likely from KingSoa's rack middleware
+        json_key = (resp_code==200) ? 'result' : 'error'
+        return self.decode(request.response_body)[json_key]
+      else # return plain body
+        return request.response_body
       end
     end
 
-    # A queued method MUST have an associated resque worker running and the soa
-    # class MUST have the @queue attribute for redis set
+    # A queued method MUST have an associated resque worker running and the
+    # receiving soa class MUST have the @queue attribute for resque(redis) set
+    # === Parameter
+    # args<MultipleMixed>:: arguments passed to the queued method. Each one MUST be json encodable
     def add_to_queue(*args)
       # use low level resque method since class might not be local available for Resque.enqueue
       Resque::Job.create(queue, local_class_name, *args)
@@ -69,8 +75,8 @@ module KingSoa
     # gets thems as splatted params. For a remote service they are converted to
     # json
     # === Returns
-    # <nil> for queued services dont answer
-    # <mixed> Whatever the method/service
+    # <nil> queued services dont answer
+    # <mixed> Whatever the method/service returns
     def perform(*args)
       if queue
         add_to_queue(*args)
@@ -82,6 +88,9 @@ module KingSoa
     end
 
     # The local class, if found
+    # === Returns
+    # <Class>:: if found in local scope
+    # <False>: if no class with the name can be found
     def local_class
       begin
         local_class_name.constantize
@@ -90,9 +99,10 @@ module KingSoa
       end
     end
 
-    # Return the class name infered from the camelized service name.
+    # === Returns
+    # <String>:: camelized class name infered from the service name.
     # === Example
-    # save_attachment => class SaveAttachment
+    # save_attachment => SaveAttachment
     def local_class_name
       self.name.to_s.camelize
     end
@@ -100,7 +110,8 @@ module KingSoa
     # Set options for the typhoeus curl request
     # === Parameter
     # req<Typhoeus::Easy>:: request object
-    # args<Array[]>:: arguments for the soa method, added to post body json encoded
+    # args<Array[Mixed]>:: arguments for the soa method. MUST be json en-/decodable
+    # added to post body json encoded
     def set_request_opts(req, args)
       req.url         = url
       req.method      = request_method || :post
@@ -111,9 +122,9 @@ module KingSoa
       req.verbose     = 1 if debug
     end
 
-    #=== Params
+    #Sets the service url for remote service calls
+    #=== Parameter
     #url_string<String>::service location to call.
-    #
     # 
     # POST(default)
     # http://myUrl.com
@@ -127,7 +138,7 @@ module KingSoa
     #   POST http://myUrl.com:3000/custom_post_receiving_path
     # 
     # === Returns
-    # url<String>:: service Url
+    # url<String>:: service url
     #
     def url=(url_string)
       # grab leading req type, case-insensitive

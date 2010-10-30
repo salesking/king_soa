@@ -40,17 +40,8 @@ describe KingSoa::Service, 'local request' do
   end
 end
 
-describe KingSoa::Service, 'queued' do
-
-  it "should call queue" do
-    s = KingSoa::Service.new(:name=>:local_soa_class, :queue=>:test_queue)
-    s.perform(1,2,3).should be_nil
-    #...also test for queue content
-
-  end
-end
-
 describe KingSoa::Service, 'remote request' do
+
   before :all do
     start_test_server
   end
@@ -86,7 +77,7 @@ describe KingSoa::Service, 'remote request' do
     s.request_method.should == :get
     s.perform(:opt_one=>'hi').should == "name=>non_soa_test_service, args=>[{\"opt_one\":\"hi\"}], auth=>12345"
   end
-  
+
   it "should GET remote service with multiple params" do
     s = KingSoa::Service.new(:name=>:non_soa_test_service,
                               :url=> "GET #{test_url}/get_with_params_test",
@@ -108,12 +99,25 @@ describe KingSoa::Service, 'remote request' do
     s.request_method.should == :put
     s.perform().should == "put it down"
   end
-  
+
   it "should DELETE a remote service and return plain text" do
     s = KingSoa::Service.new(:name=>:non_soa_test_service, :url=> "DELETE #{test_url}/delete_test")
     s.request_method.should == :delete
     s.perform().should == "ereased the sucker"
   end
+end# remote request
 
 
+if redis_running?
+  describe KingSoa::Service, 'queued' do
+
+    it "should call queue" do
+      s = KingSoa::Service.new(:name=>:local_soa_class, :queue=>:test_queue)
+      s.perform(1,2,3).should be_nil
+      #...also test for queue content, and remove from redis afterwards
+
+    end
+  end
+else
+  puts "Queued service specs skipped => Unable to connect to Redis on localhost:6379. Come on redis isn't that hard to start"
 end

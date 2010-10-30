@@ -5,10 +5,12 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "king_soa"
-    gem.summary = %Q{Abstraction layer for SOA-Services }
+    gem.summary = %Q{Abstraction layer for SOA-Services. Delegates ruby method calls to a local or remote(rpc via http) service function.}
     gem.description = <<-DESCRIPTION
-Creating a SOA requires a centralized location to define all services within the
-SOA. KingSoa takes care of keeping services in a service registry and knows how to call them.
+Creating a SOA requires a method to define all services within the SOA-landscape.
+KingSoa keeps services in a service registry and knows how to call them.
+Depending on where the service recides it calls a local method or makes a
+remote procedure(rpc) call over http.
 DESCRIPTION
     gem.email = "gl@salesking.eu"
     gem.homepage = "http://github.com/salesking/king_soa"
@@ -18,6 +20,7 @@ DESCRIPTION
     gem.add_dependency "typhoeus"
     gem.add_dependency "json"
     gem.add_dependency "resque"
+    gem.add_dependency "activesupport"
     
     gem.add_development_dependency "rspec"
     gem.add_development_dependency "rack"

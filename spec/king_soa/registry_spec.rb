@@ -25,12 +25,9 @@ describe KingSoa::Registry do
     s = KingSoa::Service.new(:name=>:soa_document, :url=>'http://localhost')
     s2 = KingSoa::Service.new(:name=>:soa_test, :url=>'http://localhost')
     s3 = KingSoa::Service.new(:name=>:tester1, :url=>'http://localhost')
-    @reg << s
-    @reg << s2
-    @reg << s3
+    @reg << s << s2 << s3
     @reg.group('soa').should == [s,s2]
     @reg.group('soa').should_not include(s3)
-
   end
 
 
