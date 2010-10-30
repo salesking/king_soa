@@ -95,11 +95,11 @@ returns values or errors.
 
 Service options
 * :name => KingSoa.increment_usage calls IncrementUsage.perform
-* :url => url to which the request goes out in form of '[method] URL:Port'
-  * '\http://my_uri' =>defaults to a POST request without http verb
-  * 'GET \http://my_uri:6969' => GET to port 6969
-  * 'DELETE \http://my_uri'
-  * 'PUT \http://my_uri:6669'
+* :url => url to which the request goes out in form of +[method] URL:Port+ examples: ( h_ttp prevents auto linking)
+  'h_ttp://my_uri':: defaults to a POST request without http verb
+  'GET h ttp://my_uri:6969':: GET to port 6969
+  'DELETE h_ttp://my_uri':: DELETE request
+  'PUT h_ttp://my_uri:6669':: PUT it down
 * :auth => optional authentication string OR integer, should also be known
 (defined) on the receiving side.
 
