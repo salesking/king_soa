@@ -95,11 +95,11 @@ returns values or errors.
 
 Service options
 * :name => KingSoa.increment_usage calls IncrementUsage.perform
-* :url => url to which the request goes out in form of +[method] URL:Port+ examples: ( h_ttp prevents auto linking)
-  'h_ttp://my_uri':: defaults to a POST request without http verb
-  'GET h ttp://my_uri:6969':: GET to port 6969
-  'DELETE h_ttp://my_uri':: DELETE request
-  'PUT h_ttp://my_uri:6669':: PUT it down
+* :url => url to which the request goes out in form of +[method] URL:Port+ examples: ( http omitted to prevent auto linking)
+  '://my_uri':: POST request, default without http verb
+  'GET ://my_uri:6969':: GET to port 6969
+  'DELETE ://my_uri':: DELETE something
+  'PUT ://my_uri:6669':: PUT it down
 * :auth => optional authentication string OR integer, should also be known (defined) on the receiving side.
 
 The remote side is always called the following url parameters. And its up to
@@ -132,6 +132,7 @@ Queued methods can not have return values => fire & forget
                        :queue => :deletions)
 
 :queue => name of the queue as defined by resque. Actually used as prefix in redis
+
 Example of a receiving resque worker class:
  
   class DeleteUser
